@@ -75,11 +75,17 @@ if st.sidebar.button("🔍 Run Analysis"):
             csv = buffer.getvalue().encode("utf-8")  # Convert to bytes
             st.download_button("⬇️ Download Correlation Matrix CSV", data=csv, file_name="correlation_matrix.csv", mime="text/csv")
 
-            # Rolling correlation
             if len(tickers) >= 2:
-                st.subheader(f"🔁 Rolling Correlation: {tickers[0]} vs {tickers[1]}")
-                roll_corr = returns[tickers[0]].rolling(window).corr(returns[tickers[1]])
-                st.line_chart(roll_corr.dropna())
+                st.sidebar.markdown("### 🔁 Rolling Correlation Tickers")
+                ticker_a = st.sidebar.selectbox("Ticker A", tickers, index=0)
+                ticker_b = st.sidebar.selectbox("Ticker B", tickers, index=1 if len(tickers) > 1 else 0)
+            
+                if ticker_a != ticker_b:
+                    st.subheader(f"🔁 Rolling Correlation: {ticker_a} vs {ticker_b}")
+                    roll_corr = returns[ticker_a].rolling(window).corr(returns[ticker_b])
+                    st.line_chart(roll_corr.dropna())
+                else:
+                    st.warning("⚠️ Select two different tickers for rolling correlation.")
 
             # Optional frequency-based correlation display
             if show_freq:
