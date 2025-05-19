@@ -18,10 +18,10 @@ st.title("📈 Stock Correlation & Risk Dashboard")
 st.sidebar.header("Configuration")
 
 # Available ticker options
-ticker_options = ["AAPL", "TSLA", "MSFT", "AMZN", "NVDA"]
+ticker_options = ["ANET", "FN", "ALAB","AAPL", "TSLA", "MSFT", "AMZN", "NVDA"]
 tickers = st.sidebar.multiselect("Select tickers", options=ticker_options, default=ticker_options)
 start = st.sidebar.date_input("Start Date", pd.to_datetime("2020-01-01"))
-end = st.sidebar.date_input("End Date", pd.to_datetime("2025-01-01"))
+end = st.sidebar.date_input("End Date", pd.to_datetime("2025-04-30"))
 window = st.sidebar.slider("Rolling Correlation Window (days)", 20, 180, 60)
 
 # Main analysis trigger
@@ -77,6 +77,48 @@ if st.sidebar.button("🔍 Run Analysis"):
                 roll_corr = returns[tickers[0]].rolling(window).corr(returns[tickers[1]])
                 st.line_chart(roll_corr.dropna())
 
+            # Multi-Frequency Correlations
+            st.subheader("🗓️ Multi-Frequency Correlations")
+
+            # Daily
+            st.markdown("### 📅 Daily Correlation")
+            daily_returns = df.pct_change().dropna()
+            daily_corr = daily_returns.corr()
+            st.dataframe(daily_corr.round(3))
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.heatmap(daily_corr, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
+            st.pyplot(fig)
+
+            # Monthly
+            st.markdown("### 🗓️ Monthly Correlation")
+            monthly_prices = df.resample('M').last()
+            monthly_returns = monthly_prices.pct_change().dropna()
+            monthly_corr = monthly_returns.corr()
+            st.dataframe(monthly_corr.round(3))
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.heatmap(monthly_corr, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
+            st.pyplot(fig)
+
+            # Quarterly
+            st.markdown("### 📆 Quarterly Correlation")
+            quarterly_prices = df.resample('Q').last()
+            quarterly_returns = quarterly_prices.pct_change().dropna()
+            quarterly_corr = quarterly_returns.corr()
+            st.dataframe(quarterly_corr.round(3))
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.heatmap(quarterly_corr, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
+            st.pyplot(fig)
+
+            # Yearly
+            st.markdown("### 📈 Year-over-Year Correlation")
+            yearly_prices = df.resample('Y').last()
+            yoy_returns = yearly_prices.pct_change().dropna()
+            yoy_corr = yoy_returns.corr()
+            st.dataframe(yoy_corr.round(3))
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.heatmap(yoy_corr, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
+            st.pyplot(fig)
+            
             # Risk metrics + optimization
             if riskfolio_available and len(tickers) > 1:
                 st.subheader("📉 Risk Metrics (VaR, CVaR, Sharpe)")
@@ -107,3 +149,4 @@ if st.sidebar.button("🔍 Run Analysis"):
     st.success("Analysis complete!")
 else:
     st.info("👈 Select tickers and press 'Run Analysis' to begin.")
+
